@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+requests
+sentence-transformers
+chromadb
+sqlalchemy
+psycopg2-binary
+python-jose
+passlib
+boto3
+pytest
