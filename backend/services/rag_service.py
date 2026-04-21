@@ -5,7 +5,7 @@ from PyPDF2 import PdfReader
 import io
 
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
-chroma_client = chromadb.Client()
+chroma_client = chroma_client = chromadb.PersistentClient(path="./chroma_db")
 
 def extract_text_from_pdf(file_bytes:bytes) -> str:
     pdf = PdfReader(io.BytesIO(file_bytes))
@@ -41,12 +41,12 @@ def embed_document(user_id:str, document_id:str, file_bytes:bytes):
 
     return collection_name
 
-def query_collection(collection_name:str, question:str, n_results:int = 2) -> str:
+def query_document(collection_name:str, question:str, n_results:int = 2) -> str:
     collection = chroma_client.get_collection(collection_name)
     query_vector = embedder.encode([question]).tolist()
     results = collection.query(
         query_embeddings=query_vector,
-        n_result=n_results
+        n_results=n_results
     )
 
     return "\n\n".join(results["documents"][0])
