@@ -10,6 +10,7 @@ import requests
 import os
 import uuid
 from services.claude import connect_claude_api
+from uuid import UUID
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 security = HTTPBearer()
@@ -70,8 +71,16 @@ def get_sessions(
     current_user: dict = Depends(get_current_user)
 ):
     user_id = current_user["sub"]
-    sessions = db.query("ChatSession").filter(ChatSession.user_id == user_id).all()
-    return [{"id":str(s.id), "title":s.title, "created_at":s.created_at} for s in sessions]
+    sessions = db.query(ChatSession).filter(ChatSession.user_id == user_id).all()
+    return [
+        {
+            "id": str(s.id),
+            "title": s.title,
+            "created_at": s.created_at,
+            "document_id": str(s.document_id)  # add this
+        } 
+        for s in sessions
+    ]
 
 # ── Send a message ────────────────────────────────────
 @router.post("/message")
@@ -146,17 +155,26 @@ def get_messages(
     current_user: dict = Depends(get_current_user)
 ):
     user_id = current_user["sub"]
+    print(f"Looking for session_id: {session_id}")
+    print(f"user_id: {user_id}")
     session = db.query(ChatSession).filter(
-        ChatSession.id == session_id,
-        ChatSession.user_id == user_id
+        ChatSession.id == UUID(session_id),
+        ChatSession.user_id == UUID(user_id)
     ).first()
+
+    print(f"Session found: {session}")
 
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     
+    # all_messaged = db.query(ChatMessage).all()
+    # print(len(all_messaged))
+    # for msg in all_messaged:
+    #     print(f"  session_id in db: {msg.session_id}, type: {type(msg.session_id)}")
     messages = db.query(ChatMessage).filter(
-        ChatMessage.session_id == session_id
+        ChatMessage.session_id == UUID(session_id)
     ).order_by(ChatMessage.timestamp).all()
+    print(messages)
 
 
     return[{"role":msg.role, "content":msg.content} for msg in messages]
