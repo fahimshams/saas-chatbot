@@ -18,6 +18,13 @@ export const getSessions = async (token) => {
     return response.data
 }
 
+export const deleteSession = async(sessionId, token) => {
+    const response = await axios.delete(`${API_URL}/chat/sessions/${sessionId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    return response.data
+}
+
 export const sendMessage = async (sessionId, message, token) => {
     const response = await axios.post(
         `${API_URL}/chat/message`,

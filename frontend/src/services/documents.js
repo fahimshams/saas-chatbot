@@ -21,3 +21,10 @@ export const getDocuments = async (token) => {
     })
     return response.data
 }
+
+export const deleteDocuments = async (documentId, token) => {
+    const response = await axios.delete(`${API_URL}/documents/${documentId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    return response.data
+}

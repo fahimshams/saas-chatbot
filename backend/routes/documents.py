@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from sqlalchemy.orm import Session
 from config.database import get_db
-from models.models import Document
+from models.models import Document, ChatSession, ChatMessage
 from services.s3 import upload_file, delete_file
 from services.rag_service import embed_document
 from services.auth import decode_token
@@ -85,3 +85,47 @@ def get_documents(
     user_id = current_user["sub"]
     documents = db.query(Document).filter(Document.user_id == user_id).all()
     return [{"id": str(doc.id), "filename": doc.filename, "uploaded_at": doc.uploaded_at} for doc in documents]
+
+@router.delete("/{document_id}")
+def delete_document(
+    document_id: str,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    user_id = current_user["sub"]
+
+    document = db.query(Document).filter(
+        Document.id == document_id,
+        Document.user_id == user_id
+    ).first()
+
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    # Find all sessions for this document
+    sessions = db.query(ChatSession).filter(
+        ChatSession.document_id == document_id
+    ).all()
+
+    # Delete messages for each session first
+    for session in sessions:
+        db.query(ChatMessage).filter(
+            ChatMessage.session_id == str(session.id)
+        ).delete()
+
+    # Delete sessions
+    db.query(ChatSession).filter(
+        ChatSession.document_id == document_id
+    ).delete()
+
+    try:
+        # Delete from S3
+        delete_file(document.path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete from S3: {str(e)}")
+
+    # Delete document from PostgreSQL
+    db.delete(document)
+    db.commit()
+
+    return {"message": "Document deleted successfully"}

@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react"
 import { useParams } from "react-router-dom"
 import { sendMessage, getMessages } from "../services/chat"
 import { useAuth } from "../context/AuthContext"
+import Navbar from "../components/Navbar"
+
 
 export default function Chat() {
     const [messages, setMessages] = useState([])
@@ -50,6 +52,8 @@ export default function Chat() {
     }
 
     return (
+        <div>
+            <Navbar/>
         <div style={{ maxWidth: "800px", margin: "40px auto", padding: "20px" }}>
             <h2>Chat</h2>
 
@@ -101,5 +105,6 @@ export default function Chat() {
                 </button>
             </div>
         </div>
+    </div>
     )
 }

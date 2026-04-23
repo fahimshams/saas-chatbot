@@ -5,25 +5,30 @@ import Login from "./pages/Login"
 import Signup from "./pages/Signup"
 import Dashboard from "./pages/Dashboard"
 import Chat from "./pages/Chat"
+import History from "./pages/History"
+
 
 function App() {
-    return (
-        <AuthProvider>
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-                    <Route path="/dashboard" element={
-                        <ProtectedRoute><Dashboard /></ProtectedRoute>
-                    } />
-                    <Route path="/chat/:id" element={
-                        <ProtectedRoute><Chat /></ProtectedRoute>
-                    } />
-                    <Route path="/" element={<Navigate to="/login" />} />
-                </Routes>
-            </BrowserRouter>
-        </AuthProvider>
-    )
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/history" element={
+            <ProtectedRoute><History /></ProtectedRoute>
+          } />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/dashboard" element={
+            <ProtectedRoute><Dashboard /></ProtectedRoute>
+          } />
+          <Route path="/chat/:id" element={
+            <ProtectedRoute><Chat /></ProtectedRoute>
+          } />
+          <Route path="/" element={<Navigate to="/login" />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  )
 }
 
 export default App
