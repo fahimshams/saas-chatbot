@@ -179,4 +179,27 @@ def get_messages(
 
     return[{"role":msg.role, "content":msg.content} for msg in messages]
 
+@router.delete("/sessions/{session_id}")
+def delete_session(
+    session_id: str,
+    db: Session= Depends(get_db),
+    current_user: dict=Depends(get_current_user)
+):
+    user_id=current_user["sub"]
 
+    session = db.query(ChatSession).filter(ChatSession.id == session_id,
+                                           ChatSession.user_id == user_id).first()
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    # Delete all messages first
+    messages = db.query(ChatMessage).filter(ChatMessage.session_id == session_id).delete()
+
+    # Delete Session
+    db.delete(session)
+    db.commit()
+
+    return {"message": "Session Deleted Successfully"}
+
+    
